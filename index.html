@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AIZOYA Intelligence — clean-room WebMCP challenge demo" />
+  <title>AIZOYA Intelligence</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">AIZOYA WebMCP Lab</div>
+        <h1>AIZOYA Intelligence</h1>
+        <p>One workspace where a human and an AI agent can evaluate time-sensitive opportunities together.</p>
+      </div>
+      <div class="status-card">
+        <strong id="toolStatus">Human demo mode</strong>
+        <span>All records are synthetic. No production systems are connected.</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <section class="panel">
+        <div class="panel-title"><h2>Opportunities</h2><span id="recordCount"></span></div>
+        <div id="cards" class="cards"></div>
+      </section>
+      <aside class="panel">
+        <div class="panel-title"><h2>Shared shortlist</h2><span id="shortlistCount"></span></div>
+        <p class="muted">Human UI and WebMCP actions update the same in-page state.</p>
+        <div id="shortlist" class="shortlist"></div>
+        <div class="tool-list">
+          <h3>Agent tools</h3>
+          <code>list_opportunities</code>
+          <code>get_opportunity</code>
+          <code>compare_opportunities</code>
+          <code>build_action_plan</code>
+          <code>update_shortlist</code>
+          <code>get_deadline_conflicts</code>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
