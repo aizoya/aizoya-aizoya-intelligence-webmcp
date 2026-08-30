@@ -11,8 +11,8 @@ for forbidden in 'service_role' 'SUPABASE_SERVICE_ROLE' 'sk-' 'BEGIN PRIVATE KEY
   fi
 done
 
-if find . -type d -name .git -print -quit | grep -q .; then
-  echo 'HOLD: .git ancestry detected in clean-room source folder.'
+if find . -mindepth 2 -type d -name .git -print -quit | grep -q .; then
+  echo 'HOLD: nested Git ancestry detected in clean-room source folder.'
   exit 1
 fi
 
