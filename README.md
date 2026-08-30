@@ -36,7 +36,7 @@ The app remains fully usable by a human when WebMCP is unavailable.
 
 ```bash
 node test.mjs
-./scripts_verify_clean_room.sh
+bash scripts_verify_clean_room.sh
 ```
 
 ## Public-release rule
