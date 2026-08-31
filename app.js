@@ -80,8 +80,7 @@ export function updateShortlist(id, action) {
   if (!['add','remove'].includes(action)) return {error:'Action must be add or remove'};
   const alreadyPresent = shortlist.includes(id);
   shortlist = action === 'add' ? [...new Set([...shortlist,id])] : shortlist.filter(x=>x!==id);
-  if (typeof document !== 'undefined') render();
-  return {
+  const result = {
     opportunityId:id,
     action,
     changed:action === 'add' ? !alreadyPresent : alreadyPresent,
@@ -90,6 +89,11 @@ export function updateShortlist(id, action) {
       : (alreadyPresent ? `${id} was removed from the shortlist.` : `${id} was not shortlisted.`),
     shortlist:[...shortlist]
   };
+  if (typeof document !== 'undefined') {
+    render();
+    $('actionStatus').textContent = result.message;
+  }
+  return result;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -109,8 +113,7 @@ export function render() {
     const op = byId(id); return op ? `<div><strong>${op.title}</strong><span>${op.type} · ${scoreOpportunity(op)}</span></div>` : '';
   }).join('') || '<p class="muted">No opportunities shortlisted.</p>';
   document.querySelectorAll('button[data-id]').forEach(btn => btn.addEventListener('click', () => {
-    const result = updateShortlist(btn.dataset.id, shortlist.includes(btn.dataset.id) ? 'remove' : 'add');
-    $('actionStatus').textContent = result.message ?? result.error;
+    updateShortlist(btn.dataset.id, shortlist.includes(btn.dataset.id) ? 'remove' : 'add');
   }));
 }
 
