@@ -32,6 +32,8 @@ Then open `http://localhost:8080`.
 
 The app remains fully usable by a human when WebMCP is unavailable.
 
+The shared shortlist persists in the current browser using `localStorage`. No shortlist data is sent to a server, and **Reset demo** restores the deterministic starting state.
+
 ## Test
 
 ```bash

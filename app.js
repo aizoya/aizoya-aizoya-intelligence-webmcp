@@ -7,12 +7,58 @@ export const opportunities = [
   {id:'OPP-006',title:'Responsible AI Networking Night',provider:'East Bay Tech Forum',type:'Event',deadline:'2026-09-10T17:00:00-07:00',costUsd:25,effortHours:4,impact:68,fit:72,urgency:86,requirements:['RSVP'],summary:'Networking event for founders, investors, and AI practitioners.',status:'Shortlisted'}
 ];
 
-export let shortlist = ['OPP-001','OPP-004'];
+const DEFAULT_SHORTLIST = ['OPP-001','OPP-004'];
+const SHORTLIST_STORAGE_KEY = 'aizoya-webmcp-demo-shortlist-v1';
+
+export let shortlist = [...DEFAULT_SHORTLIST];
 
 const VALID_TYPES = new Set(opportunities.map(op => op.type));
 const VALID_STATUSES = new Set(opportunities.map(op => op.status));
 
 export const byId = (id) => opportunities.find((op) => op.id === id);
+
+function getLocalStorage() {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
+export function restoreShortlist() {
+  const storage = getLocalStorage();
+  if (!storage) return [...shortlist];
+  try {
+    const stored = JSON.parse(storage.getItem(SHORTLIST_STORAGE_KEY));
+    if (!Array.isArray(stored)) return [...shortlist];
+    shortlist = [...new Set(stored.filter(id => typeof id === 'string' && byId(id)))];
+  } catch {
+    shortlist = [...DEFAULT_SHORTLIST];
+  }
+  return [...shortlist];
+}
+
+function persistShortlist() {
+  try {
+    getLocalStorage()?.setItem(SHORTLIST_STORAGE_KEY, JSON.stringify(shortlist));
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+}
+
+export function resetDemo() {
+  shortlist = [...DEFAULT_SHORTLIST];
+  try {
+    getLocalStorage()?.removeItem(SHORTLIST_STORAGE_KEY);
+  } catch {
+    // Reset still succeeds in memory when storage is unavailable.
+  }
+  if (typeof document !== 'undefined') {
+    render();
+    $('actionStatus').textContent = 'Demo shortlist reset to its original state.';
+  }
+  return [...shortlist];
+}
 
 export function scoreOpportunity(op, priorities={}) {
   const weights = {
@@ -80,6 +126,7 @@ export function updateShortlist(id, action) {
   if (!['add','remove'].includes(action)) return {error:'Action must be add or remove'};
   const alreadyPresent = shortlist.includes(id);
   shortlist = action === 'add' ? [...new Set([...shortlist,id])] : shortlist.filter(x=>x!==id);
+  persistShortlist();
   const result = {
     opportunityId:id,
     action,
@@ -189,7 +236,9 @@ export async function registerTools() {
 }
 
 if (typeof document !== 'undefined') {
+  restoreShortlist();
   render();
+  $('resetDemo').addEventListener('click', resetDemo);
   registerTools().then(ok => {
     $('toolStatus').textContent = ok ? 'WebMCP tools detected' : 'Human demo mode';
   });
