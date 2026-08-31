@@ -3,8 +3,8 @@
 Do these in order. Stop if any public-release/security check fails.
 
 1. On Devpost, tap **Start project** and create the project shell with the name `AIZOYA Intelligence`.
-2. Create a **brand-new public GitHub repository** named `aizoya-webmcp-lab` (or the closest available name). Do not fork, import, mirror, or copy the private `aizoya/AIZOYA` repository.
-3. Upload only the contents of the approved clean-room package.
+2. Use the existing isolated public repository `aizoya/aizoya-aizoya-intelligence-webmcp`. Do not fork, import, mirror, or copy the private `aizoya/AIZOYA` repository.
+3. Confirm that only the approved clean-room package is present.
 4. Confirm `LICENSE` is visible at the repository root and GitHub detects the open-source license.
 5. Confirm the repository visibly contains `document.modelContext.registerTool(...)` in the WebMCP implementation.
 6. Deploy the static app to an isolated public host (Cloudflare Pages, Netlify, Vercel, ChatGPT Sites, or equivalent).

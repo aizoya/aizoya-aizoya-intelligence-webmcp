@@ -9,6 +9,9 @@ export const opportunities = [
 
 export let shortlist = ['OPP-001','OPP-004'];
 
+const VALID_TYPES = new Set(opportunities.map(op => op.type));
+const VALID_STATUSES = new Set(opportunities.map(op => op.status));
+
 export const byId = (id) => opportunities.find((op) => op.id === id);
 
 export function scoreOpportunity(op, priorities={}) {
@@ -25,6 +28,11 @@ export function scoreOpportunity(op, priorities={}) {
 }
 
 export function listOpportunities(input={}) {
+  if (input.type !== undefined && !VALID_TYPES.has(input.type)) return [];
+  if (input.status !== undefined && !VALID_STATUSES.has(input.status)) return [];
+  if (input.maxCostUsd !== undefined && (!Number.isFinite(input.maxCostUsd) || input.maxCostUsd < 0)) {
+    throw new Error('Maximum cost must be a nonnegative number.');
+  }
   return opportunities.filter(op =>
     (!input.type || op.type === input.type) &&
     (!input.status || op.status === input.status) &&
@@ -33,7 +41,12 @@ export function listOpportunities(input={}) {
 }
 
 export function compareOpportunities(ids, priorities={}) {
-  return ids.map(byId).filter(Boolean)
+  if (!Array.isArray(ids) || ids.length < 2) return {error:'Select at least two opportunity IDs'};
+  const uniqueIds = [...new Set(ids)];
+  if (uniqueIds.length !== ids.length) return {error:'Opportunity IDs must be unique'};
+  const missingIds = uniqueIds.filter(id => !byId(id));
+  if (missingIds.length) return {error:'Opportunity not found',missingIds};
+  return uniqueIds.map(byId)
     .map(op => ({...op, demoScore:scoreOpportunity(op,priorities)}))
     .sort((a,b)=>b.demoScore-a.demoScore);
 }
@@ -48,6 +61,9 @@ export function buildActionPlan(id, targetDate) {
 }
 
 export function getDeadlineConflicts(ids) {
+  if (!Array.isArray(ids) || ids.length < 2) return {error:'Select at least two opportunity IDs',conflicts:[]};
+  const missingIds = ids.filter(id => !byId(id));
+  if (missingIds.length) return {error:'Opportunity not found',missingIds,conflicts:[]};
   const selected = ids.map(byId).filter(Boolean);
   const conflicts = [];
   for (let i=0;i<selected.length;i++) {
@@ -59,11 +75,21 @@ export function getDeadlineConflicts(ids) {
   return {conflicts};
 }
 
-function updateShortlist(id, action) {
+export function updateShortlist(id, action) {
   if (!byId(id)) return {error:'Opportunity not found'};
+  if (!['add','remove'].includes(action)) return {error:'Action must be add or remove'};
+  const alreadyPresent = shortlist.includes(id);
   shortlist = action === 'add' ? [...new Set([...shortlist,id])] : shortlist.filter(x=>x!==id);
   if (typeof document !== 'undefined') render();
-  return {shortlist:[...shortlist]};
+  return {
+    opportunityId:id,
+    action,
+    changed:action === 'add' ? !alreadyPresent : alreadyPresent,
+    message:action === 'add'
+      ? (alreadyPresent ? `${id} is already shortlisted.` : `${id} was added to the shortlist.`)
+      : (alreadyPresent ? `${id} was removed from the shortlist.` : `${id} was not shortlisted.`),
+    shortlist:[...shortlist]
+  };
 }
 
 const $ = (id) => document.getElementById(id);
@@ -83,7 +109,8 @@ export function render() {
     const op = byId(id); return op ? `<div><strong>${op.title}</strong><span>${op.type} · ${scoreOpportunity(op)}</span></div>` : '';
   }).join('') || '<p class="muted">No opportunities shortlisted.</p>';
   document.querySelectorAll('button[data-id]').forEach(btn => btn.addEventListener('click', () => {
-    updateShortlist(btn.dataset.id, shortlist.includes(btn.dataset.id) ? 'remove' : 'add');
+    const result = updateShortlist(btn.dataset.id, shortlist.includes(btn.dataset.id) ? 'remove' : 'add');
+    $('actionStatus').textContent = result.message ?? result.error;
   }));
 }
 
